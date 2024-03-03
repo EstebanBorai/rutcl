@@ -1,6 +1,8 @@
 mod error;
 
+use std::collections::hash_map::RandomState;
 use std::fmt::Display;
+use std::hash::{BuildHasher, Hasher};
 use std::ops::Range;
 use std::str::FromStr;
 
@@ -171,6 +173,15 @@ pub enum Format {
 pub struct Rut(Num, VerificationDigit);
 
 impl Rut {
+    /// Generates a random [`Rut`] instance.
+    pub fn random() -> Self {
+        let hasher = RandomState::new().build_hasher();
+        let num = hasher.finish() as u32 % MAX;
+        let vd = VerificationDigit::new(num).unwrap();
+
+        Rut(num, vd)
+    }
+
     /// Return the RUT's number ([`Num`]) without the [`VerificationDigit`]
     #[inline]
     pub fn num(&self) -> Num {
@@ -316,5 +327,16 @@ mod tests {
             assert_eq!(rut.vd(), VerificationDigit::from_str(vd).unwrap());
             assert_eq!(rut.to_string(), format!("{}-{}", num, vd));
         });
+    }
+
+    #[test]
+    fn random_never_repeats() {
+        let mut ruts = vec![];
+
+        for _ in 0..100 {
+            let rut = Rut::random();
+            assert!(!ruts.contains(&rut));
+            ruts.push(rut);
+        }
     }
 }
