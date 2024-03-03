@@ -167,7 +167,7 @@ pub enum Format {
     Dash,
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct Rut(Num, VerificationDigit);
 
 impl Rut {
