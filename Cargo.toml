@@ -1,6 +1,6 @@
 [package]
 name = "rutcl"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 description = "Chilean National ID (RUT) Parser"
 authors = ["Esteban Borai <estebanborai@gmail.com>"]
