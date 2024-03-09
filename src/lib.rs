@@ -268,7 +268,7 @@ impl FromStr for Rut {
 }
 
 impl TryFrom<Num> for Rut {
-    type Error = error::Error;
+    type Error = Error;
 
     fn try_from(num: Num) -> Result<Self, Self::Error> {
         if RANGE.contains(&num) {
