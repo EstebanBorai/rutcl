@@ -1,12 +1,27 @@
-mod error;
-
 use std::collections::hash_map::RandomState;
 use std::fmt::Display;
 use std::hash::{BuildHasher, Hasher};
+use std::num::ParseIntError;
 use std::ops::Range;
 use std::str::FromStr;
 
-use self::error::Error;
+use thiserror::Error;
+
+#[derive(Clone, Debug, Error)]
+pub enum Error {
+    #[error("Invalid verification digit: have {have}, want {want}")]
+    InvalidVerificationDigit { have: char, want: char },
+    #[error("Verification digit out of bounds found: {0}")]
+    VerificationDigitOutOfBounds(String),
+    #[error("Invalid format")]
+    InvalidFormat,
+    #[error("Provided string is not a number. {0}")]
+    NaN(ParseIntError),
+    #[error("Out of range")]
+    OutOfRange,
+    #[error("The provided string is empty")]
+    EmptyString,
+}
 
 /// RUT's Number without the [`VerificationDigit`]
 pub type Num = u32;
@@ -253,7 +268,7 @@ impl FromStr for Rut {
 }
 
 impl TryFrom<Num> for Rut {
-    type Error = error::Error;
+    type Error = Error;
 
     fn try_from(num: Num) -> Result<Self, Self::Error> {
         if RANGE.contains(&num) {
