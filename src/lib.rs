@@ -2,7 +2,7 @@ use std::collections::hash_map::RandomState;
 use std::fmt::Display;
 use std::hash::{BuildHasher, Hasher};
 use std::num::ParseIntError;
-use std::ops::Range;
+use std::ops::RangeInclusive;
 use std::str::FromStr;
 
 use thiserror::Error;
@@ -26,14 +26,20 @@ pub enum Error {
 /// RUT's Number without the [`VerificationDigit`]
 pub type Num = u32;
 
-/// Max value for a RUT
-const MAX: u32 = 99_999_999;
+/// Max number for a RUT without the Verification Digit
+const MAX_NUM: u32 = 99_999_999;
+
+/// Min number for a RUT without the Verification Digit
+const MIN_NUM: u32 = 1_000_000;
 
 /// Min value for a RUT
-const MIN: u32 = 1_000_000;
+pub const MIN: Rut = Rut(MIN_NUM, VerificationDigit::Nine);
+
+/// Max value for a RUT
+pub const MAX: Rut = Rut(MAX_NUM, VerificationDigit::Nine);
 
 /// RUT value range
-const RANGE: Range<u32> = MIN..MAX;
+const RANGE: RangeInclusive<u32> = MIN_NUM..=MAX_NUM;
 
 /// Product factor for RUT's Verification Digit Calculation
 const FACTOR: [u32; 6] = [2, 3, 4, 5, 6, 7];
@@ -191,7 +197,7 @@ impl Rut {
     /// Generates a random [`Rut`] instance.
     pub fn random() -> Self {
         let hasher = RandomState::new().build_hasher();
-        let num = hasher.finish() as u32 % MAX;
+        let num = hasher.finish() as u32 % MAX_NUM;
         let vd = VerificationDigit::new(num).unwrap();
 
         Rut(num, vd)
@@ -324,6 +330,8 @@ mod tests {
             (43_496_204, VerificationDigit::Eight),
             (70_059_381, VerificationDigit::Nine),
             (92_635_843, VerificationDigit::K),
+            (super::MIN_NUM, VerificationDigit::Nine),
+            (super::MAX_NUM, VerificationDigit::Nine),
         ];
 
         for (number, expected) in units {
@@ -353,5 +361,17 @@ mod tests {
             assert!(!ruts.contains(&rut));
             ruts.push(rut);
         }
+    }
+
+    #[test]
+    fn parses_min_rut() {
+        let string = MIN.to_string();
+        assert_eq!(Rut::from_str(&string).unwrap(), MIN);
+    }
+
+    #[test]
+    fn parses_max_rut() {
+        let string = MAX.to_string();
+        assert_eq!(Rut::from_str(&string).unwrap(), MAX);
     }
 }
