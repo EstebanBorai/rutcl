@@ -169,9 +169,9 @@ impl TryFrom<char> for VerificationDigit {
     }
 }
 
-impl Into<char> for VerificationDigit {
-    fn into(self) -> char {
-        match self {
+impl From<VerificationDigit> for char {
+    fn from(val: VerificationDigit) -> Self {
+        match val {
             VerificationDigit::Zero => '0',
             VerificationDigit::One => '1',
             VerificationDigit::Two => '2',
@@ -357,7 +357,10 @@ impl FromStr for Rut {
             return Ok(want);
         }
 
-        Err(Error::InvalidVerificationDigit { have: input_vd, want: want.vd().into() })
+        Err(Error::InvalidVerificationDigit {
+            have: input_vd,
+            want: want.vd().into(),
+        })
     }
 }
 
@@ -425,9 +428,9 @@ mod tests {
     use csv::ReaderBuilder;
 
     #[cfg(feature = "serde")]
-    use serde::de::IntoDeserializer;
-    #[cfg(feature = "serde")]
     use serde::de::value::{Error as ValueError, StrDeserializer, StringDeserializer};
+    #[cfg(feature = "serde")]
+    use serde::de::IntoDeserializer;
     #[cfg(feature = "serde")]
     use serde_test::{assert_de_tokens_error, assert_tokens, Token};
 
@@ -593,10 +596,7 @@ mod tests {
         let rut: StrDeserializer<ValueError> = "450222755".into_deserializer();
         let rut = rut.deserialize_str(RutVisitor);
 
-        assert_eq!(
-            rut,
-            Ok(Rut(45022275, VerificationDigit::Five))
-        );
+        assert_eq!(rut, Ok(Rut(45022275, VerificationDigit::Five)));
     }
 
     #[test]
@@ -605,10 +605,7 @@ mod tests {
         let rut: StringDeserializer<ValueError> = String::from("450222755").into_deserializer();
         let rut = rut.deserialize_string(RutVisitor);
 
-        assert_eq!(
-            rut,
-            Ok(Rut(45022275, VerificationDigit::Five))
-        );
+        assert_eq!(rut, Ok(Rut(45022275, VerificationDigit::Five)));
     }
 
     #[test]
@@ -623,10 +620,7 @@ mod tests {
     #[test]
     #[cfg(feature = "serde")]
     fn deserialize_rut_as_err_empty() {
-        assert_de_tokens_error::<Rut>(
-            &[Token::Str("")],
-            "The provided string is empty",
-        )
+        assert_de_tokens_error::<Rut>(&[Token::Str("")], "The provided string is empty")
     }
 
     #[test]
