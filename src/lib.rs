@@ -1,15 +1,20 @@
 use std::collections::hash_map::RandomState;
-use std::fmt::{self, Display};
+use std::fmt::Display;
 use std::hash::{BuildHasher, Hasher};
 use std::num::ParseIntError;
 use std::ops::RangeInclusive;
 use std::str::FromStr;
 
-use serde::de::Visitor;
+#[cfg(feature = "serde")]
+use std::fmt;
+
 use thiserror::Error;
 
-// #[cfg(feature = "serde")]
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+#[cfg(feature = "serde")]
+use serde::de::Visitor;
 
 #[derive(Clone, Debug, Error)]
 pub enum Error {
@@ -241,6 +246,22 @@ pub enum Format {
 pub struct Rut(Num, VerificationDigit);
 
 impl Rut {
+    /// Retrieves the maximum supported [`Rut`].
+    ///
+    /// Equivalent to using `rutcl::MAX`
+    #[inline]
+    pub const fn max() -> Self {
+        MAX
+    }
+
+    /// Retieves the minimum supported [`Rut`].
+    ///
+    /// Equivalent to using `rutcl::MIN`
+    #[inline]
+    pub const fn min() -> Self {
+        MIN
+    }
+
     /// Generates a random [`Rut`] instance.
     pub fn random() -> Self {
         let hasher = RandomState::new().build_hasher();
@@ -353,7 +374,7 @@ impl TryFrom<Num> for Rut {
     }
 }
 
-// #[cfg(feature = "serde")]
+#[cfg(feature = "serde")]
 impl Serialize for Rut {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -363,8 +384,10 @@ impl Serialize for Rut {
     }
 }
 
+#[cfg(feature = "serde")]
 struct RutVisitor;
 
+#[cfg(feature = "serde")]
 impl<'de> Visitor<'de> for RutVisitor {
     type Value = Rut;
 
@@ -387,6 +410,7 @@ impl<'de> Visitor<'de> for RutVisitor {
     }
 }
 
+#[cfg(feature = "serde")]
 impl<'de> Deserialize<'de> for Rut {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -399,8 +423,12 @@ impl<'de> Deserialize<'de> for Rut {
 #[cfg(test)]
 mod tests {
     use csv::ReaderBuilder;
+
+    #[cfg(feature = "serde")]
     use serde::de::IntoDeserializer;
+    #[cfg(feature = "serde")]
     use serde::de::value::{Error as ValueError, StrDeserializer, StringDeserializer};
+    #[cfg(feature = "serde")]
     use serde_test::{assert_de_tokens_error, assert_tokens, Token};
 
     use super::*;
@@ -477,6 +505,16 @@ mod tests {
     }
 
     #[test]
+    fn associated_fn_max() {
+        assert_eq!(Rut::max(), MAX);
+    }
+
+    #[test]
+    fn associated_fn_min() {
+        assert_eq!(Rut::min(), MIN);
+    }
+
+    #[test]
     fn parses_min_rut() {
         let string = MIN.to_string();
         assert_eq!(Rut::from_str(&string).unwrap(), MIN);
@@ -542,6 +580,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "serde")]
     fn serialize_rut_instance() {
         let rut = Rut::from_str("92.635.843-K").unwrap();
 
@@ -549,6 +588,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "serde")]
     fn deserialize_rut_as_str() {
         let rut: StrDeserializer<ValueError> = "450222755".into_deserializer();
         let rut = rut.deserialize_str(RutVisitor);
@@ -560,6 +600,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "serde")]
     fn deserialize_rut_as_string() {
         let rut: StringDeserializer<ValueError> = String::from("450222755").into_deserializer();
         let rut = rut.deserialize_string(RutVisitor);
@@ -571,6 +612,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "serde")]
     fn deserialize_rut_as_err_invalid_str() {
         assert_de_tokens_error::<Rut>(
             &[Token::Str("ThisIsNotARut")],
@@ -579,6 +621,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "serde")]
     fn deserialize_rut_as_err_empty() {
         assert_de_tokens_error::<Rut>(
             &[Token::Str("")],
@@ -587,6 +630,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "serde")]
     fn deserialize_rut_as_err() {
         assert_de_tokens_error::<Rut>(
             &[Token::Str("1.111.111-1")],
