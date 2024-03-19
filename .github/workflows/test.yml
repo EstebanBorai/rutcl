@@ -7,7 +7,7 @@ on:
 
 jobs:
   test:
-    name: Runs "cargo test" on ${{ matrix.os }}
+    name: Runs "cargo test --all-features" on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -24,4 +24,4 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Run tests
-        run: cargo test
+        run: cargo test --all-features
