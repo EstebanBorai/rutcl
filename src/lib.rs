@@ -1,11 +1,15 @@
 use std::collections::hash_map::RandomState;
-use std::fmt::Display;
+use std::fmt::{self, Display};
 use std::hash::{BuildHasher, Hasher};
 use std::num::ParseIntError;
 use std::ops::RangeInclusive;
 use std::str::FromStr;
 
+use serde::de::Visitor;
 use thiserror::Error;
+
+// #[cfg(feature = "serde")]
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 #[derive(Clone, Debug, Error)]
 pub enum Error {
@@ -135,6 +139,45 @@ impl VerificationDigit {
             VerificationDigit::Eight => 8,
             VerificationDigit::Nine => 9,
             VerificationDigit::K => 10,
+        }
+    }
+}
+
+impl TryFrom<char> for VerificationDigit {
+    type Error = Error;
+
+    fn try_from(value: char) -> Result<Self, Self::Error> {
+        match value {
+            '0' => Ok(VerificationDigit::Zero),
+            '1' => Ok(VerificationDigit::One),
+            '2' => Ok(VerificationDigit::Two),
+            '3' => Ok(VerificationDigit::Three),
+            '4' => Ok(VerificationDigit::Four),
+            '5' => Ok(VerificationDigit::Five),
+            '6' => Ok(VerificationDigit::Six),
+            '7' => Ok(VerificationDigit::Seven),
+            '8' => Ok(VerificationDigit::Eight),
+            '9' => Ok(VerificationDigit::Nine),
+            'K' => Ok(VerificationDigit::K),
+            _ => Err(Error::VerificationDigitOutOfBounds(value.to_string())),
+        }
+    }
+}
+
+impl Into<char> for VerificationDigit {
+    fn into(self) -> char {
+        match self {
+            VerificationDigit::Zero => '0',
+            VerificationDigit::One => '1',
+            VerificationDigit::Two => '2',
+            VerificationDigit::Three => '3',
+            VerificationDigit::Four => '4',
+            VerificationDigit::Five => '5',
+            VerificationDigit::Six => '6',
+            VerificationDigit::Seven => '7',
+            VerificationDigit::Eight => '8',
+            VerificationDigit::Nine => '9',
+            VerificationDigit::K => 'K',
         }
     }
 }
@@ -272,16 +315,12 @@ impl FromStr for Rut {
     fn from_str(input: &str) -> Result<Self, Self::Err> {
         let sans = Rut::sans(input);
 
-        if sans.is_empty() {
-            return Err(Error::EmptyString);
-        }
-
         let mut chars = sans.chars().collect::<Vec<char>>();
 
         // Discards the last char, assuming it is the verification digit
-        chars.pop().expect(
-            "Cannot extract verification digit from sans representation. Empty string found.",
-        );
+        let Some(input_vd) = chars.pop() else {
+            return Err(Error::EmptyString);
+        };
 
         let num = chars
             .into_iter()
@@ -291,7 +330,13 @@ impl FromStr for Rut {
             .parse::<Num>()
             .map_err(Error::NaN)?;
 
-        Rut::try_from(num)
+        let want = Rut::try_from(num)?;
+
+        if want.vd() == VerificationDigit::try_from(input_vd)? {
+            return Ok(want);
+        }
+
+        Err(Error::InvalidVerificationDigit { have: input_vd, want: want.vd().into() })
     }
 }
 
@@ -308,9 +353,55 @@ impl TryFrom<Num> for Rut {
     }
 }
 
+// #[cfg(feature = "serde")]
+impl Serialize for Rut {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&self.format(Format::Sans))
+    }
+}
+
+struct RutVisitor;
+
+impl<'de> Visitor<'de> for RutVisitor {
+    type Value = Rut;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("a Rut String instance formatted using the Sans format")
+    }
+
+    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+    where
+        E: serde::de::Error,
+    {
+        Rut::from_str(v).map_err(|err| E::custom(err.to_string()))
+    }
+
+    fn visit_string<E>(self, v: String) -> Result<Self::Value, E>
+    where
+        E: serde::de::Error,
+    {
+        Rut::from_str(v.as_str()).map_err(|err| E::custom(err.to_string()))
+    }
+}
+
+impl<'de> Deserialize<'de> for Rut {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserializer.deserialize_str(RutVisitor)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use csv::ReaderBuilder;
+    use serde::de::IntoDeserializer;
+    use serde::de::value::{Error as ValueError, StrDeserializer, StringDeserializer};
+    use serde_test::{assert_de_tokens_error, assert_tokens, Token};
 
     use super::*;
 
@@ -448,5 +539,58 @@ mod tests {
     fn format_dots_rut_max() {
         let rut = MAX;
         assert_eq!(rut.format(Format::Dots), "99.999.999-9");
+    }
+
+    #[test]
+    fn serialize_rut_instance() {
+        let rut = Rut::from_str("92.635.843-K").unwrap();
+
+        assert_tokens(&rut, &[Token::Str("92635843K")]);
+    }
+
+    #[test]
+    fn deserialize_rut_as_str() {
+        let rut: StrDeserializer<ValueError> = "450222755".into_deserializer();
+        let rut = rut.deserialize_str(RutVisitor);
+
+        assert_eq!(
+            rut,
+            Ok(Rut(45022275, VerificationDigit::Five))
+        );
+    }
+
+    #[test]
+    fn deserialize_rut_as_string() {
+        let rut: StringDeserializer<ValueError> = String::from("450222755").into_deserializer();
+        let rut = rut.deserialize_string(RutVisitor);
+
+        assert_eq!(
+            rut,
+            Ok(Rut(45022275, VerificationDigit::Five))
+        );
+    }
+
+    #[test]
+    fn deserialize_rut_as_err_invalid_str() {
+        assert_de_tokens_error::<Rut>(
+            &[Token::Str("ThisIsNotARut")],
+            "Provided string is not a number. invalid digit found in string",
+        )
+    }
+
+    #[test]
+    fn deserialize_rut_as_err_empty() {
+        assert_de_tokens_error::<Rut>(
+            &[Token::Str("")],
+            "The provided string is empty",
+        )
+    }
+
+    #[test]
+    fn deserialize_rut_as_err() {
+        assert_de_tokens_error::<Rut>(
+            &[Token::Str("1.111.111-1")],
+            "Invalid verification digit: have 1, want 4",
+        )
     }
 }
