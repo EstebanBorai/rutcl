@@ -181,13 +181,17 @@ impl Display for VerificationDigit {
 }
 
 /// Format for RUT's string representation
-///
-/// - `Sans`: RUT without any special characters
-/// - `Dash`: RUT with a dash between the number and the verification digit
 #[derive(Copy, Clone, Debug)]
 pub enum Format {
+    /// No special characters. the RUT is formatted as a continuous set of
+    /// digits followed by the verification digit without dash or dots.
     Sans,
+    /// The RUT is formatted with a dash between the number and the
+    /// verification digit. No dots are included.
     Dash,
+    /// Fully qualified RUT notation, following the format `XX.XXX.XXX-X` which
+    /// is printed in the Chilean ID cards.
+    Dots,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -219,6 +223,24 @@ impl Rut {
         match fmt {
             Format::Sans => format!("{}{}", self.0, self.1),
             Format::Dash => format!("{}-{}", self.0, self.1),
+            Format::Dots => {
+                let num = self.0.to_string();
+                let mut chars = num.chars().collect::<Vec<char>>();
+                let mut result = String::new();
+
+                while !chars.is_empty() {
+                    let chunk = chars.split_off(chars.len().saturating_sub(3));
+                    let digits = chunk.into_iter().collect::<String>();
+
+                    if result.is_empty() {
+                        result = digits;
+                    } else {
+                        result = format!("{}.{}", digits, result);
+                    }
+                }
+
+                format!("{}-{}", result, self.1)
+            }
         }
     }
 
@@ -373,5 +395,58 @@ mod tests {
     fn parses_max_rut() {
         let string = MAX.to_string();
         assert_eq!(Rut::from_str(&string).unwrap(), MAX);
+    }
+
+    #[test]
+    fn format_sans_rut_value() {
+        let have = "17.951.585-7";
+        let want = "179515857";
+        let rut = Rut::from_str(have).unwrap();
+
+        assert_eq!(rut.format(Format::Sans), want);
+    }
+
+    #[test]
+    fn format_dash_rut_value() {
+        let have = "17.951.585-7";
+        let want = "17951585-7";
+        let rut = Rut::from_str(have).unwrap();
+
+        assert_eq!(rut.format(Format::Dash), want);
+    }
+
+    #[test]
+    fn format_dots_rut_value() {
+        let cases = vec![
+            ("179515857", "17.951.585-7"),
+            ("75.303.649-0", "75.303.649-0"),
+            ("273880941", "27.388.094-1"),
+            ("27962409-2", "27.962.409-2"),
+            ("98127523-3", "98.127.523-3"),
+            ("30.686.957-4", "30.686.957-4"),
+            ("450222755", "45.022.275-5"),
+            ("615706396", "61.570.639-6"),
+            ("59.608.778-7", "59.608.778-7"),
+            ("43496204-8", "43.496.204-8"),
+            ("700593819", "70.059.381-9"),
+            ("92635843K", "92.635.843-K"),
+        ];
+
+        for (have, want) in cases {
+            let rut = Rut::from_str(have).unwrap();
+            assert_eq!(rut.format(Format::Dots), want);
+        }
+    }
+
+    #[test]
+    fn format_dots_rut_min() {
+        let rut = MIN;
+        assert_eq!(rut.format(Format::Dots), "1.000.000-9");
+    }
+
+    #[test]
+    fn format_dots_rut_max() {
+        let rut = MAX;
+        assert_eq!(rut.format(Format::Dots), "99.999.999-9");
     }
 }
