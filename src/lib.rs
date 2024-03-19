@@ -326,7 +326,8 @@ impl Rut {
 
 impl Display for Rut {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}-{}", self.num(), self.vd())
+        let sans = self.format(Format::Sans);
+        write!(f, "{sans}")
     }
 }
 
@@ -492,7 +493,7 @@ mod tests {
             let rut = Rut::from_str(rut).unwrap();
             assert_eq!(rut.num(), num.parse::<Num>().unwrap());
             assert_eq!(rut.vd(), VerificationDigit::from_str(vd).unwrap());
-            assert_eq!(rut.to_string(), format!("{}-{}", num, vd));
+            assert_eq!(rut.to_string(), format!("{}{}", num, vd));
         });
     }
 
