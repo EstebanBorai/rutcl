@@ -176,7 +176,7 @@ impl TryFrom<char> for VerificationDigit {
             '7' => Ok(VerificationDigit::Seven),
             '8' => Ok(VerificationDigit::Eight),
             '9' => Ok(VerificationDigit::Nine),
-            'K' => Ok(VerificationDigit::K),
+            'K' | 'k' => Ok(VerificationDigit::K),
             _ => Err(Error::VerificationDigitOutOfBounds(value.to_string())),
         }
     }
@@ -707,5 +707,12 @@ mod tests {
                 expect
             );
         }
+    }
+
+    #[test]
+    fn support_lowercase_k() {
+        let rut = Rut::from_str("15441715-k").expect("Should build RUT instance");
+
+        assert_eq!(rut.1, VerificationDigit::K);
     }
 }
