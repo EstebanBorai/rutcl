@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::collections::hash_map::RandomState;
 use std::fmt::Display;
 use std::hash::{BuildHasher, Hasher};
@@ -74,6 +75,18 @@ pub enum VerificationDigit {
     Nine,
     /// `K` Represent the Verification Digit `K`, which is equivalent to `10`
     K,
+}
+
+impl Ord for VerificationDigit {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.to_u32().cmp(&other.to_u32())
+    }
+}
+
+impl PartialOrd for VerificationDigit {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
 }
 
 impl VerificationDigit {
@@ -378,6 +391,26 @@ impl TryFrom<Num> for Rut {
     }
 }
 
+impl Ord for Rut {
+    fn cmp(&self, other: &Self) -> Ordering {
+        if self.0 > other.0 {
+            return Ordering::Greater;
+        }
+
+        if other.0 > self.0 {
+            return Ordering::Less;
+        }
+
+        Ordering::Equal
+    }
+}
+
+impl PartialOrd for Rut {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
 #[cfg(feature = "serde")]
 impl Serialize for Rut {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -631,5 +664,48 @@ mod tests {
             &[Token::Str("1.111.111-1")],
             "Invalid verification digit: have 1, want 4",
         )
+    }
+
+    #[test]
+    fn compares_ruts() {
+        let ruts = vec![
+            ("1326658-1", "15441715-K"),
+            ("15441715-K", "29718958-1"),
+            ("29718958-1", "30088687-6"),
+            ("30088687-6", "45278657-5"),
+            ("45278657-5", "58175019-6"),
+            ("58175019-6", "63990386-9"),
+            ("63990386-9", "77992926-4"),
+            ("77992926-4", "80919766-2"),
+            ("80919766-2", "94577430-4"),
+        ];
+
+        for (rut_a, rut_b) in ruts {
+            assert!(
+                Rut::from_str(rut_a).unwrap() < Rut::from_str(rut_b).unwrap(),
+                "{rut_a} should be lower than {rut_b}"
+            );
+            assert!(
+                Rut::from_str(rut_b).unwrap() > Rut::from_str(rut_a).unwrap(),
+                "{rut_b} should be greather than {rut_a}"
+            );
+        }
+    }
+
+    #[test]
+    fn compares_equal_ruts() {
+        let ruts = vec![
+            ("15441715-K", "15441715-K", true),
+            ("15441715-K", "29718958-1", false),
+            ("30088687-6", "30088687-6", true),
+            ("30088687-6", "45278657-5", false),
+        ];
+
+        for (rut_a, rut_b, expect) in ruts {
+            assert_eq!(
+                Rut::from_str(rut_a).unwrap() == Rut::from_str(rut_b).unwrap(),
+                expect
+            );
+        }
     }
 }
