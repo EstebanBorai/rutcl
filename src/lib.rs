@@ -61,7 +61,7 @@ const SYMBOLS: u32 = 11;
 /// Chilean RUT's Verification Digit
 ///
 /// Refer: https://es.wikipedia.org/wiki/Rol_Único_Tributario
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
 pub enum VerificationDigit {
     Zero,
     One,
@@ -255,7 +255,7 @@ pub enum Format {
     Dots,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
 pub struct Rut(Num, VerificationDigit);
 
 impl Rut {
