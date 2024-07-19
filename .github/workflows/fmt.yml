@@ -24,4 +24,4 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Run fmt
-        run: cargo fmt -- --check
+        run: cargo fmt -p rutcl -- --check

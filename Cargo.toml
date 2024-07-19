@@ -1,32 +1,6 @@
-[package]
-name = "rutcl"
-version = "0.1.9"
-edition = "2021"
-description = "Chilean National ID (RUT) Parser"
-authors = ["Esteban Borai <estebanborai@gmail.com>"]
-repository = "https://github.com/EstebanBorai/rutcl"
-categories = ["web-programming"]
-homepage = "https://github.com/EstebanBorai/rutcl"
-keywords = ["rutcl", "chile", "national", "nid", "parser"]
-license = "MIT"
-readme = "README.md"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[lib]
-name = "rutcl"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-thiserror = "1.0.56"
-
-# Optional Dependencies
-serde = { version = "1.0.197", optional = true }
-
-[dev-dependencies]
-csv = "1.3.0"
-serde_test = "1.0.176"
-
-[features]
-serde = ["dep:serde"]
+[workspace]
+members = [
+    "crates/rutcl",
+    "crates/web"
+]
+resolver = "1"

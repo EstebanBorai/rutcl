@@ -24,4 +24,4 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: cargo clippy
-        run: cargo clippy -- -D warnings
+        run: cargo clippy -p rutcl -- -D warnings

@@ -470,7 +470,7 @@ mod tests {
 
     use super::*;
 
-    const SAMPLES: &str = include_str!("../fixtures/samples.csv");
+    const SAMPLES: &str = include_str!("../../../fixtures/samples.csv");
 
     struct Sample {
         rut: String,
