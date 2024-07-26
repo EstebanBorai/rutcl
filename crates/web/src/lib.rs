@@ -1,7 +1,6 @@
 mod components;
 mod sections;
 
-use components::header::Header;
 use leptos::{component, view, IntoView};
 use leptos_meta::{provide_meta_context, Title};
 
@@ -20,7 +19,6 @@ pub fn App() -> impl IntoView {
         <div class="grid md:grid-cols-[250px,auto] bg-zinc-950 text-gray-50 min-h-screen">
             <NavBar/>
             <div class="h-screen oveflow-hidden">
-                <Header/>
                 <main class="h-[calc(100vh-60px)] overflow-y-scroll">
                     <Hero/>
                     <Motivation/>

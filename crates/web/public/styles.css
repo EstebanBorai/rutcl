@@ -25,7 +25,7 @@ h3 {
 }
 
 .navbar .link:hover {
-    @apply cursor-pointer border-zinc-800;
+    @apply cursor-pointer border-zinc-800 bg-emerald-950;
 }
 
 .navbar .link-active {
