@@ -1,0 +1,54 @@
+apiVersion: 0.5.0
+meta:
+  name: rut-fmt
+  version: 0.1.1
+  namespace: eborai
+
+functions:
+  rut_is_valid:
+    operator: filter
+    dependencies:
+     - name: rutcl
+       version: "0.1.9"
+    language: rust
+    inputs:
+      - name: input
+        type: string
+    output:
+      type: bool
+
+  rut_format_sans:
+    operator: map
+    dependencies:
+     - name: rutcl
+       version: "0.1.9"
+    language: rust
+    inputs:
+      - name: input
+        type: string
+    output:
+      type: string
+
+  rut_format_dash:
+    operator: map
+    dependencies:
+     - name: rutcl
+       version: "0.1.9"
+    language: rust
+    inputs:
+      - name: input
+        type: string
+    output:
+      type: string
+
+  rut_format_dots:
+    operator: map
+    dependencies:
+     - name: rutcl
+       version: "0.1.9"
+    language: rust
+    inputs:
+      - name: input
+        type: string
+    output:
+      type: string
