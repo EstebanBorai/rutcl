@@ -1,1 +1,0 @@
-# rut_format_sans

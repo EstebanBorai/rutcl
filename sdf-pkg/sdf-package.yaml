@@ -1,8 +1,8 @@
 apiVersion: 0.5.0
 meta:
-  name: rut-fmt
-  version: 0.1.1
-  namespace: eborai
+  name: rutcl
+  version: 0.1.2
+  namespace: estebanborai
 
 functions:
   rut_is_valid:

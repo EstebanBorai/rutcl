@@ -1,2 +1,0 @@
-[env]
-CC = "/opt/homebrew/opt/llvm/bin/clang"

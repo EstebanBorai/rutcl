@@ -1,1 +1,0 @@
-# rut_is_valid
