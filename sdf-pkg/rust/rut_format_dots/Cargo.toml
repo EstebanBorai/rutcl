@@ -1,0 +1,17 @@
+[package]
+name = "rut_format_dots"
+version = "0.0.0"
+edition = "2021"
+description = ""
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+## GENERATED DEPENDENCIES
+anyhow = { workspace = true }
+serde = { workspace = true }
+wit-bindgen = { workspace = true, features = ["macros"]}
+sdf-macros = { workspace = true }
+rutcl = "0.1.9"
+## END OF GENERATED DEPENDENCIES
