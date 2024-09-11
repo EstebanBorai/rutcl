@@ -1,6 +1,5 @@
 .env
 .sdf
-.wit
 /target
 /examples/target
 Cargo.lock
