@@ -256,6 +256,7 @@ fn support_lowercase_k() {
 }
 
 #[test]
+#[cfg(feature = "rand")]
 fn generates_random_in_range() {
     let mut prevs = Vec::with_capacity(100);
 

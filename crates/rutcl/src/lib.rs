@@ -12,9 +12,10 @@ use std::str::FromStr;
 #[cfg(feature = "serde")]
 use std::fmt;
 
-use rand::distributions::uniform::SampleRange;
-use rand::{thread_rng, Rng};
 use thiserror::Error;
+
+#[cfg(feature = "rand")]
+use rand::distributions::uniform::SampleRange;
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
@@ -289,8 +290,11 @@ impl Rut {
         Ok(Rut(num, vd))
     }
 
+    #[cfg(feature = "rand")]
     /// Generates a random [`Rut`] instance inside the provided range.
     pub fn random_in_range<R: SampleRange<u32>>(range: R) -> Result<Self, Error> {
+        use rand::{thread_rng, Rng};
+
         let num = thread_rng().gen_range(range);
         let vd = VerificationDigit::new(num)?;
 
