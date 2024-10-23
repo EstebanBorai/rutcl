@@ -16,16 +16,16 @@ pub fn App() -> impl IntoView {
     provide_meta_context();
 
     view! {
-        <Title text="RUT Chile | Chilean National ID (RUT) Parser for Rust"/>
+        <Title text="RUT Chile | Chilean National ID (RUT) Parser for Rust" />
         <div class="grid md:grid-cols-[250px,auto] bg-zinc-950 text-gray-50 min-h-screen">
-            <NavBar/>
+            <NavBar />
             <div class="h-screen oveflow-hidden">
-                <Header/>
+                <Header />
                 <main class="h-[calc(100vh-60px)] overflow-y-scroll">
-                    <Hero/>
-                    <Motivation/>
-                    <Installation/>
-                    <CreateRut/>
+                    <Hero />
+                    <Motivation />
+                    <Installation />
+                    <CreateRut />
                 </main>
             </div>
         </div>

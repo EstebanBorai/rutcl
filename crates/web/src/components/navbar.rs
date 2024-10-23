@@ -12,6 +12,7 @@ pub fn NavBar() -> impl IntoView {
                 <a class="link" href="/#installation">Installation</a>
                 <span class="section-divider">Usage</span>
                 <a class="link" href="/#create-rut">Create RUT</a>
+                <a class="link" href="/#random-in-range-rut">Random in Range RUT</a>
             </nav>
             <footer class="h-[60px] bg-zinc-950 absolute p-4 bottom-0 w-full">
                 <small class="text-xs text-center block text-gray-400">
