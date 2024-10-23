@@ -254,3 +254,27 @@ fn support_lowercase_k() {
 
     assert_eq!(rut.1, VerificationDigit::K);
 }
+
+#[test]
+fn generates_random_in_range() {
+    let mut prevs = Vec::with_capacity(100);
+
+    for i in 0..100 {
+        let rut = Rut::random_in_range(10_000_000..15_000_000).unwrap();
+        assert!(
+            !prevs.contains(&rut),
+            "RUT: {:?} (Number {}) was generated before within a max of 100 iterations, current iteration {}",
+            rut,
+            rut.0,
+            i + 1,
+        );
+        prevs.push(rut);
+        assert!(
+            10_000_000 <= rut.0 && rut.0 <= 15_000_000,
+            "RUT: {:?} (Number {}) outbounds range, current iteration {}",
+            rut,
+            rut.0,
+            i + 1,
+        );
+    }
+}

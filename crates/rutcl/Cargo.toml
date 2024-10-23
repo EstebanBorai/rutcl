@@ -20,6 +20,10 @@ name = "rutcl"
 
 [dependencies]
 thiserror = "1.0.56"
+rand = "0.8.5"
+
+# [target.'cfg(all(any(target_arch = "wasm32", target_arch = "wasm64"), target_os = "unknown"))'.dependencies]
+# rand = { version = "0.8.5", features = ["js"] }
 
 # Optional Dependencies
 serde = { version = "1.0.197", optional = true }

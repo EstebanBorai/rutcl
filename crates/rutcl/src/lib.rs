@@ -12,6 +12,8 @@ use std::str::FromStr;
 #[cfg(feature = "serde")]
 use std::fmt;
 
+use rand::distributions::uniform::SampleRange;
+use rand::{thread_rng, Rng};
 use thiserror::Error;
 
 #[cfg(feature = "serde")]
@@ -288,9 +290,8 @@ impl Rut {
     }
 
     /// Generates a random [`Rut`] instance inside the provided range.
-    pub fn random_in_range() -> Result<Self, Error> {
-        let hasher = RandomState::new().build_hasher();
-        let num = hasher.finish() as u32 % MAX_NUM;
+    pub fn random_in_range<R: SampleRange<u32>>(range: R) -> Result<Self, Error> {
+        let num = thread_rng().gen_range(range);
         let vd = VerificationDigit::new(num)?;
 
         Ok(Rut(num, vd))
