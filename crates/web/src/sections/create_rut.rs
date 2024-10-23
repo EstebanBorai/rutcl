@@ -23,7 +23,7 @@ pub fn CreateRut() -> impl IntoView {
                 let rut = Rut::random();
             </code>
             <h3>Example</h3>
-                <p class="bg-gray-900 p-4 font-mono rounded-md shadow-md mb-4">{move || random_rut_reader.get().format(Format::Dots)}</p>
+                <p class="bg-gray-900 p-4 font-mono rounded-md shadow-md mb-4">{move || random_rut_reader.get().unwrap().format(Format::Dots)}</p>
             <button type="button" on:click={randomize}>Generate</button>
         </Section>
     }
