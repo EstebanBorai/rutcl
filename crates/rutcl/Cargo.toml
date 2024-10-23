@@ -9,7 +9,7 @@ categories = ["web-programming"]
 homepage = "https://github.com/EstebanBorai/rutcl"
 keywords = ["rutcl", "chile", "national", "nid", "parser"]
 license = "MIT"
-readme = "README.md"
+readme = "../../README.md"
 
 [lib]
 name = "rutcl"
